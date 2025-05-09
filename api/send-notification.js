@@ -24,42 +24,48 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.post("/send-notification", async (req, res) => {
-  const { fcmToken, title, body, data } = req.body;
-  const { screen } = data || {};
+  try {
+    const { fcmToken, title, body, data } = req.body;
+    const { screen } = data || {};
 
-  if (!fcmToken || !title || !body) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-
-  res.status(200).json({ success: "Notification scheduled in 1 minute!" });
-
-  setTimeout(async () => {
-    const message = {
-      token: fcmToken,
-      notification: {
-        title: title,
-        body: body,
-      },
-      data: {
-        screen: screen,
-      },
-
-      android: {
-        priority: "high",
-        notification: {
-          channel_id: "default",
-          sound: "default",
-        },
-      },
-    };
-
-    try {
-      await admin.messaging().send(message);
-      console.log("Notification sent after 10-seconds delay!");
-    } catch (error) {
-      console.error("Error sending notification:", error);
+    if (!fcmToken || !title || !body) {
+      return res.status(400).json({ error: "Missing required fields" });
     }
-  }, 5000);
+
+    res.status(200).json({ success: "Notification scheduled in 1 minute!" });
+
+    setTimeout(async () => {
+      const message = {
+        token: fcmToken,
+        notification: {
+          title: title,
+          body: body,
+        },
+        data: {
+          screen: screen,
+        },
+
+        android: {
+          priority: "high",
+          notification: {
+            channel_id: "default",
+            sound: "default",
+          },
+        },
+      };
+
+      try {
+        await admin.messaging().send(message);
+        console.log("Notification sent after 10-seconds delay!");
+      } catch (error) {
+        console.error("Error sending notification:", error);
+      }
+    }, 5000);
+  } catch (error) {
+    console.error("Error in /send-notification endpoint:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
 });
+
 
 module.exports = app;  
