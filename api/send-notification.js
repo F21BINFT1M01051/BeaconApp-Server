@@ -18,13 +18,13 @@ if (!admin.apps.length) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
+  if (req.method !== 'POST') {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const { fcmToken, data } = req.body;
-    const { screen, title, body } = data || {};
+    const { fcmToken, title, body, data } = req.body;
+    const { screen } = data || {};
 
     if (!fcmToken || !title || !body) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -32,11 +32,8 @@ export default async function handler(req, res) {
 
     const message = {
       token: fcmToken,
-      data: {
-        screen: screen || "",
-        title: title,
-        body: body,
-      },
+      notification: { title, body },
+      data: { screen: screen || '' },
       android: {
         priority: "high",
         notification: {
